@@ -2,15 +2,19 @@ import db from './db.js'
 
 class UserQuery {
     async getAll() {
-        return (await db.query(
-            `SELECT *
-             FROM users;`
-        )).rows
+        try {
+            return (await db.query(
+                `SELECT *
+                 FROM users;`
+            )).rows
+        } catch (e) {
+            console.log(e)
+        }
     }
 
     async getOne(user = {id: null, email: null}) {
-        const {id, email} = user
         try {
+            const {id, email} = user
             if (id) {
                 return (await db.query(
                     `SELECT id,

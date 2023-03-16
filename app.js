@@ -15,6 +15,8 @@ const corsOptions = {
     origin: [
         'http://192.168.0.195:3000',
         'http://localhost:3000',
+        'https://www.cloudhit.ru',
+        'https://cloudhit.ru',
 
     ],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
@@ -29,10 +31,10 @@ app.use(cors(corsOptions))
 app.use(express.json())
 app.use(bodyParser.json())
 
-// app.use(bodyParser.urlencoded({
-//     extended: true
-// }))
-app.use(express.urlencoded({extended: false}))
+app.use(bodyParser.urlencoded({
+    extended: true
+}))
+// app.use(express.urlencoded({extended: false}))
 app.use(passport.initialize())
 passportStrategy(passport)
 app.use(fileUpload({}))

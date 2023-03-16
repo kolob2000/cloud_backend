@@ -9,8 +9,15 @@ const regPass = /^(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[^\w\d\s:])([^\s]){6,16}$/
 class UserControllers {
 
     async getUser(req, res) {
-        const users = await uq.getAll()
-        res.status(200).json(users)
+        try {
+            // const users = await uq.getAll()
+            res.status(200).json('in development')
+
+        } catch (e) {
+            res.status(500).json('server error')
+
+        }
+
     }
 
     async auth(req, res) {
@@ -27,8 +34,8 @@ class UserControllers {
     }
 
     async signIn(req, res) {
-        const {email, password} = req.body
         try {
+            const {email, password} = req.body
             const user = await uq.getOne({email})
             if (user) {
                 if (bcrypt.compareSync(password, user.password)) {
@@ -55,13 +62,14 @@ class UserControllers {
 
             }
         } catch (e) {
-            console.log(e.message)
+            res.status(500).json('server error')
         }
     }
 
     async signUp(req, res) {
         try {
             const {email, password} = req.body
+            console.log(email, password)
             const candidate = await uq.getOne({email})
             if (candidate) {
                 res.status(409).json({message: 'Пользователь существует.'})
@@ -74,7 +82,7 @@ class UserControllers {
                         res.status(201).json({message: 'Пользователь создан.'})
                     } else {
                         res.status(400).json({
-                            message: 'Неверный пароль.',
+                            message: 'Некорректный пароль.',
                             description: 'пароль должен включать одну цифру (0-9)\n' +
                                 '1 букву в верхнем регистре\n' +
                                 '1 букву в нижнем регистре\n' +
@@ -84,26 +92,30 @@ class UserControllers {
                     }
                 } else {
                     res.status(400).json({
-                        message: 'Неверный формат электронной почты.',
+                        message: 'Некорректная почта.',
                     })
                 }
 
             }
         } catch (e) {
-            console.log(e.message)
+            res.status(500).json('server error')
         }
 
 
     }
 
     async editUser(req, res) {
-        console.log('im in patch')
-        res.status(200).json({message: 'ok'})
+        try {
+            res.status(200).json('in development')
+        } catch (e) {
+            res.status(500).json('server error')
+        }
+
     }
 
     async deleteUser(req, res) {
-        const {id} = req.params
         try {
+            const {id} = req.params
             const result = await uq.deleteOne({id})
             res.status(200).json({message: 'ok', ...result})
         } catch (e) {

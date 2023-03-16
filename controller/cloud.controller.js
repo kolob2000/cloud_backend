@@ -40,7 +40,6 @@ class CloudController {
 
 
     async uploadFile(req, res) {
-        console.log('im in upload file')
         try {
             const files = req.files
             const parent = JSON.parse(req.body.parent)
@@ -89,7 +88,7 @@ class CloudController {
                 {recursive: true}, err => {
                     if (err) throw err;
                 })
-            res.status(201).json('helloPost')
+            res.status(201).json('Succes.')
         } catch (e) {
             res.status(204).json(`Ошибка. ${e.message}.`)
 
@@ -98,12 +97,18 @@ class CloudController {
     }
 
     async updateFile(req, res) {
-        res.status(200).json('helloUpdate')
+        try {
+            res.status(200).json('in development.')
+
+        } catch (e) {
+            res.status(204).json('in development.')
+
+        }
     }
 
     async deleteFile(req, res) {
-        const uuid = (await req.user).uuid
         try {
+            const uuid = (await req.user).uuid
             for (const id of req.body) {
                 const file_path = await fq.getPathById(id)
                 fs.rm(path.join('files', uuid, file_path), {recursive: true, force: true}, err => {

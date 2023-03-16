@@ -39,14 +39,19 @@ class FileQuery {
                  fileEntity = 'FOLDER', fileType = '',
                  fileSize = 0) {
 
-
-        return await db.query(`INSERT INTO files(file_name, file_entity, file_type, file_path, size, parent_id, user_id)
-                               VALUES ('${fileName}', '${fileEntity}', '${fileType}',
-                                       '${path.join(parentPath,
-                                               cyrillicToTranslit.transform(fileName, '_').toLowerCase()
-                                       )}',
-                                       ${fileSize}, ${parentId}, ${userID})
-                               RETURNING id;`)
+        try {
+            return await db.query(`INSERT INTO files(file_name, file_entity, file_type, file_path, size,
+                                                     parent_id,
+                                                     user_id)
+                                   VALUES ('${fileName}', '${fileEntity}', '${fileType}',
+                                           '${path.join(parentPath,
+                                                   cyrillicToTranslit.transform(fileName, '_').toLowerCase()
+                                           )}',
+                                           ${fileSize}, ${parentId}, ${userID})
+                                   RETURNING id;`)
+        } catch (e) {
+            console.log(e)
+        }
 
     }
 
