@@ -1,12 +1,63 @@
 import bcrypt from 'bcrypt'
 import uq from '../models/UserQuery.js'
+import vq from '../models/VerifyQuery.js'
 import jwt from 'jsonwebtoken'
+import {mailer} from "../middleware/mailer.js";
+import {confirmLetter} from "../middleware/letters.js";
 
 const regMail = /(\w+\.?|-?\w+?)+@\w+\.?-?\w+?(\.\w{2,3})+/
 const regPass = /^(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[^\w\d\s:])([^\s]){6,16}$/
 
 
 class UserControllers {
+    async emailVerify(req, res) {
+        try {
+            const {token} = req.body
+            jwt.verify(token, process.env.PRIVATE_JWT_VERIFY, {}, async (err, decoded) => {
+                if (err) {
+                    if (err.message === 'jwt expired') {
+                        try {
+                            const decoded = jwt.decode(token)
+                            const result = await vq.getOneByUId(decoded.id)
+                            if (result.email === result.email) {
+                                jwt.sign({
+                                        id: decoded.id,
+                                        email: decoded.email
+                                    }, process.env.PRIVATE_JWT_VERIFY, {algorithm: 'HS256', expiresIn: 60 * 60 * 24},
+                                    async function (err, tokn) {
+                                        if (err) throw err
+                                        const link = `https://cloudhit.ru/auth/verify?token=${tokn}`
+                                        await mailer(decoded.email, 'Регистрация',
+                                            confirmLetter(decoded.email, decoded.email, link))
+                                        res.status(410).json('link expired')
+                                    })
+                            } else {
+                                res.status(404).json('invalid token')
+                            }
+                        } catch {
+                            res.status(500).json('Server error')
+                        }
+                    } else {
+                        res.status(404).json('invalid token')
+                    }
+                } else {
+                    const {email, id} = decoded
+                    const result = await vq.getOneByUId(id)
+                    if (result && result.email === email) {
+                        await uq.setActive(id)
+                        await vq.deleteOne(id)
+                        res.status(200).json('Success.')
+                    } else {
+                        res.status(404).json('invalid token')
+                    }
+                }
+
+            })
+
+        } catch (e) {
+            console.log(e)
+        }
+    }
 
     async getUser(req, res) {
         try {
@@ -52,7 +103,7 @@ class UserControllers {
                                     token: `Bearer ${token}`
                                 })
 
-                        });
+                        })
 
                 } else {
                     res.status(401).json({message: 'Неверный пароль.'})
@@ -67,6 +118,7 @@ class UserControllers {
     }
 
     async signUp(req, res) {
+        console.log('im in signup method')
         try {
             const {email, password} = req.body
             console.log(email, password)
@@ -78,8 +130,18 @@ class UserControllers {
                     if (regPass.test(password)) {
                         const salt = 9
                         const hash = bcrypt.hashSync(password, salt)
-                        const result = await uq.addOne({email, password: hash})
-                        res.status(201).json({message: 'Пользователь создан.'})
+                        const {id} = await uq.addOne({email, password: hash})
+                        jwt.sign({
+                                id: id,
+                                email: email
+                            }, process.env.PRIVATE_JWT_VERIFY, {algorithm: 'HS256', expiresIn: 25},
+                            async function (err, token) {
+                                if (err) throw err
+                                const link = `https://cloudhit.ru/auth/verify?token=${token}`
+                                await vq.addOne(id, email)
+                                await mailer(email, 'Регистрация', confirmLetter(email, email, link))
+                                res.status(201).json({message: 'Пользователь создан.'})
+                            })
                     } else {
                         res.status(400).json({
                             message: 'Некорректный пароль.',

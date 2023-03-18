@@ -34,5 +34,17 @@ CREATE TABLE IF NOT EXISTS files
 
 );
 
+CREATE TABLE IF NOT EXISTS verification
+(
+    id        SERIAL,
+    user_id   INTEGER NOT NULL UNIQUE,
+    email     TEXT,
+    PRIMARY KEY (id),
+    FOREIGN KEY (user_id)
+        REFERENCES users (id) ON DELETE CASCADE
+);
+
+
+
 
 

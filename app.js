@@ -13,7 +13,7 @@ import {passportStrategy} from './middleware/passport.js'
 
 const corsOptions = {
     origin: [
-        'http://192.168.0.195:3000',
+        'http://192.168.0.193:3000',
         'http://localhost:3000',
         'https://www.cloudhit.ru',
         'https://cloudhit.ru',

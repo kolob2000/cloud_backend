@@ -66,6 +66,21 @@ class UserQuery {
         // )).rows[0]
     }
 
+    async setActive(userId) {
+        try {
+            await db.query(
+                `
+                    UPDATE "users"
+                    SET is_active = true
+                    where id = ${userId};
+                `
+            )
+        } catch (e) {
+            console.log(e)
+            return false
+        }
+    }
+
     async deleteOne({id}) {
         try {
             return (await db.query(

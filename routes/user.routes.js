@@ -8,6 +8,7 @@ router.get('/users/:id',
     passport.authenticate('jwt', {session: false}),
     uc.getUser)
 router.post('/users/signup', uc.signUp)
+router.post('/users/verify', uc.emailVerify)
 router.post('/users/signin', uc.signIn)
 router.post('/users/auth',
     passport.authenticate('jwt', {session: false}),
