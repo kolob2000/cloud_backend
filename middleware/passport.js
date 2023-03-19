@@ -1,6 +1,9 @@
+import * as dotenv from 'dotenv'
+dotenv.config()
 import {Strategy as JwtStrategy} from "passport-jwt";
 import {ExtractJwt} from "passport-jwt"
 import uq from "../models/UserQuery.js";
+
 
 export const passportStrategy = passport => {
     const options = {

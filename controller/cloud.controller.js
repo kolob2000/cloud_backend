@@ -4,6 +4,7 @@ import pkg from 'iconv-lite'
 import path from 'node:path/posix'
 import fs from 'node:fs'
 import CyrillicToTranslit from 'cyrillic-to-translit-js';
+import userQuery from "../models/UserQuery.js";
 
 pkg.skipDecodeWarning = true;
 const cyrillicToTranslit = new CyrillicToTranslit()

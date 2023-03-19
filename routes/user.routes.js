@@ -13,6 +13,9 @@ router.post('/users/signin', uc.signIn)
 router.post('/users/auth',
     passport.authenticate('jwt', {session: false}),
     uc.auth)
+router.post('/users/repeat',
+    passport.authenticate('jwt', {session: false}),
+    uc.repeatEmail)
 router.patch('/users/:id',
     passport.authenticate('jwt', {session: false}),
     uc.editUser)

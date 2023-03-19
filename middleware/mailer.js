@@ -1,3 +1,5 @@
+import * as dotenv from 'dotenv'
+dotenv.config()
 import nodemailer from 'nodemailer'
 
 export async function mailer(email, subject, letter) {
@@ -7,8 +9,8 @@ export async function mailer(email, subject, letter) {
             port: 465,
             secure: true,
             auth: {
-                user: 'cloudhit',
-                pass: 'qait9h1uNLyJXssnp5CB'
+                user: process.env.EMAIL_LOGIN,
+                pass: process.env.EMAIL_PASSWORD
             }
         })
         let result = await transporter.sendMail({

@@ -1,6 +1,6 @@
 {
   "name": "cloud-backend",
-  "version": "0.0.1b",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {

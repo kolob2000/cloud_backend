@@ -1,3 +1,6 @@
+import * as dotenv from 'dotenv'
+
+dotenv.config()
 import bcrypt from 'bcrypt'
 import uq from '../models/UserQuery.js'
 import vq from '../models/VerifyQuery.js'
@@ -24,9 +27,9 @@ class UserControllers {
                                         id: decoded.id,
                                         email: decoded.email
                                     }, process.env.PRIVATE_JWT_VERIFY, {algorithm: 'HS256', expiresIn: 60 * 60 * 24},
-                                    async function (err, tokn) {
+                                    async function (err, token) {
                                         if (err) throw err
-                                        const link = `https://cloudhit.ru/auth/verify?token=${tokn}`
+                                        const link = `https://cloudhit.ru/auth/verify?token=${token}`
                                         await mailer(decoded.email, 'Регистрация',
                                             confirmLetter(decoded.email, decoded.email, link))
                                         res.status(410).json('link expired')
@@ -46,7 +49,7 @@ class UserControllers {
                     if (result && result.email === email) {
                         await uq.setActive(id)
                         await vq.deleteOne(id)
-                        res.status(200).json('Success.')
+                        res.status(200).json('Success')
                     } else {
                         res.status(404).json('invalid token')
                     }
@@ -57,6 +60,29 @@ class UserControllers {
         } catch (e) {
             console.log(e)
         }
+    }
+
+    async repeatEmail(req, res) {
+        try {
+            const {email, id} = await req.user
+            jwt.sign({
+                    id: id,
+                    email: email
+                }, process.env.PRIVATE_JWT_VERIFY, {algorithm: 'HS256', expiresIn: 60 * 60 * 24 * 7},
+                async function (err, token) {
+                    if (err) {
+                        res.status(500).json('Server error')
+                    } else {
+                        const link = `https://cloudhit.ru/auth/verify?token=${token}`
+                        await mailer(email, 'Регистрация',
+                            confirmLetter(email, email, link))
+                        res.status(200).json('Success')
+                    }
+                })
+        } catch (e) {
+            console.log(e)
+        }
+
     }
 
     async getUser(req, res) {

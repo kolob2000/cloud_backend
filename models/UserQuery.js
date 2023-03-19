@@ -81,6 +81,18 @@ class UserQuery {
         }
     }
 
+    async isActive(userId) {
+        try {
+            return (await db.query(`
+                SELECT is_active
+                FROM users
+                WHERE id = ${userId};
+            `)).rows[0].is_active
+        } catch (e) {
+            console.log(e)
+        }
+    }
+
     async deleteOne({id}) {
         try {
             return (await db.query(
