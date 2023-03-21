@@ -5,6 +5,7 @@ import path from 'node:path/posix'
 import fs from 'node:fs'
 import CyrillicToTranslit from 'cyrillic-to-translit-js';
 import userQuery from "../models/UserQuery.js";
+import {emitter} from "../routes/realtime.routes.js";
 
 pkg.skipDecodeWarning = true;
 const cyrillicToTranslit = new CyrillicToTranslit()
@@ -62,6 +63,8 @@ class CloudController {
                     'FILE', files[key].mimetype, files[key].size)
 
             }
+            emitter.emit('updateFiles', uuid)
+
             res.status(201).json('Success!')
 
         } catch (e) {
@@ -80,7 +83,6 @@ class CloudController {
 
             if (parent) {
                 parentPath = await fq.getPathById(parent)
-                console.log(parentPath)
             }
             await fq.addOne(name, parentPath, parent, id)
 
@@ -89,6 +91,7 @@ class CloudController {
                 {recursive: true}, err => {
                     if (err) throw err;
                 })
+            emitter.emit('updateFiles', uuid)
             res.status(201).json('Succes.')
         } catch (e) {
             res.status(204).json(`Ошибка. ${e.message}.`)
@@ -120,6 +123,7 @@ class CloudController {
                 // })
             }
             await fq.deleteFile(req.body)
+            emitter.emit('updateFiles', uuid)
             res.status(200).json(`Файлы успешно удалены.`)
         } catch (e) {
             res.status(204).json(`Ошибка . ${e.message}.`)

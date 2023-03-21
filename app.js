@@ -1,4 +1,5 @@
 import * as dotenv from 'dotenv'
+
 dotenv.config()
 import express from 'express'
 import bodyParser from 'body-parser'
@@ -7,6 +8,7 @@ import passport from 'passport'
 import fileUpload from 'express-fileupload'
 import cloudRouter from "./routes/cloud.routes.js"
 import userRouter from './routes/user.routes.js'
+import realtimeRouter from "./routes/realtime.routes.js";
 import {passportStrategy} from './middleware/passport.js'
 
 
@@ -39,6 +41,7 @@ passportStrategy(passport)
 app.use(fileUpload({}))
 app.use('/api', cloudRouter)
 app.use('/api', userRouter)
+app.use('/api', realtimeRouter)
 
 app.get('/', (req, res) => {
     res.status(200).json('hello')
