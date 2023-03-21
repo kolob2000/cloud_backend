@@ -1,20 +1,23 @@
 import * as dotenv from 'dotenv'
+
 dotenv.config()
 import nodemailer from 'nodemailer'
 
 export async function mailer(email, subject, letter) {
     try {
         let transporter = nodemailer.createTransport({
-            host: 'smtp.mail.ru',
-            port: 465,
-            secure: true,
+            pool: true,
+            service: 'Gmail',
             auth: {
-                user: process.env.EMAIL_LOGIN,
-                pass: process.env.EMAIL_PASSWORD
-            }
+                type: 'OAuth2',
+                user: process.env.G_EMAIL_LOGIN,
+                refreshToken: process.env.REFRESH_TOKEN,
+                clientId: process.env.CLIENT_ID,
+                clientSecret: process.env.CLIENT_SECRET
+            },
+            from: '"CloudHit.ru" <cloudyhit@gmail.com>'
         })
-        let result = await transporter.sendMail({
-                from: '"CloudHit.ru" <cloudhit@mail.ru>', // sender address
+        await transporter.sendMail({
                 to: email, // list of receivers
                 subject: subject, // Subject line
                 html: letter,

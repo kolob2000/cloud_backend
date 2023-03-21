@@ -26,10 +26,10 @@ class UserControllers {
                                 jwt.sign({
                                         id: decoded.id,
                                         email: decoded.email
-                                    }, process.env.PRIVATE_JWT_VERIFY, {algorithm: 'HS256', expiresIn: 60 * 60 * 24},
+                                    }, process.env.PRIVATE_JWT_VERIFY, {algorithm: 'HS256', expiresIn: 60 * 60 * 24 * 7},
                                     async function (err, token) {
                                         if (err) throw err
-                                        const link = `https://cloudhit.ru/auth/verify?token=${token}`
+                                        const link = `${process.env.VERIFY_DOMAIN}/auth/verify?token=${token}`
                                         await mailer(decoded.email, 'Регистрация',
                                             confirmLetter(decoded.email, decoded.email, link))
                                         res.status(410).json('link expired')
@@ -73,14 +73,16 @@ class UserControllers {
                     if (err) {
                         res.status(500).json('Server error')
                     } else {
-                        const link = `https://cloudhit.ru/auth/verify?token=${token}`
+                        const link = `${process.env.VERIFY_DOMAIN}/auth/verify?token=${token}`
                         await mailer(email, 'Регистрация',
                             confirmLetter(email, email, link))
+                        console.log('after email', process.env.VERIFY_DOMAIN)
                         res.status(200).json('Success')
                     }
                 })
         } catch (e) {
             console.log(e)
+            res.status(500).json('Server error')
         }
 
     }
@@ -101,12 +103,16 @@ class UserControllers {
         try {
             const {id} = await req.user
             const user = await uq.getOne({id})
-            res.status(200).json(
-                {
-                    ...(({password, ...rest}) => rest)(user),
-                })
+            if (user) {
+                res.status(200).json(
+                    {
+                        ...(({password, ...rest}) => rest)(user),
+                    })
+            } else {
+                res.status(401).json('Unauthorized')
+            }
         } catch (e) {
-            res.status(204).json(e)
+            res.status(401).json(e)
         }
     }
 
@@ -144,10 +150,8 @@ class UserControllers {
     }
 
     async signUp(req, res) {
-        console.log('im in signup method')
         try {
             const {email, password} = req.body
-            console.log(email, password)
             const candidate = await uq.getOne({email})
             if (candidate) {
                 res.status(409).json({message: 'Пользователь существует.'})
@@ -160,10 +164,10 @@ class UserControllers {
                         jwt.sign({
                                 id: id,
                                 email: email
-                            }, process.env.PRIVATE_JWT_VERIFY, {algorithm: 'HS256', expiresIn: 25},
+                            }, process.env.PRIVATE_JWT_VERIFY, {algorithm: 'HS256', expiresIn: 60 * 60 * 24 * 7},
                             async function (err, token) {
                                 if (err) throw err
-                                const link = `https://cloudhit.ru/auth/verify?token=${token}`
+                                const link = `${process.env.VERIFY_DOMAIN}/auth/verify?token=${token}`
                                 await vq.addOne(id, email)
                                 await mailer(email, 'Регистрация', confirmLetter(email, email, link))
                                 res.status(201).json({message: 'Пользователь создан.'})
@@ -207,7 +211,7 @@ class UserControllers {
             const result = await uq.deleteOne({id})
             res.status(200).json({message: 'ok', ...result})
         } catch (e) {
-            res.status(204).json(e)
+            res.status(401).json(e)
         }
     }
 }
